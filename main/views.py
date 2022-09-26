@@ -1,7 +1,10 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.models import User
+import re
+from tabnanny import check
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+
 
 def reset_messages(request):
     request.session['password_error'] = False
@@ -31,24 +34,29 @@ def singup_next(request):
     return render(request, 'main/singup_next.html',{})
 
 @login_required
-def main_view(request):
-    return render(request, 'main/main_view.html', {})
+def user_main_view(request, user_id):
+    user = User.objects.get(id=user_id)
+    return render(request, 'main/main_view.html', {
+        'user':user,
+    })
 
 def auth_login(request):
-    if request.session['password_error'] == True:
-        request.session['password_error'] = False
-    else:
-        request.session['error_message'] = ''
-    return render(request, 'registration/login.html', {'message':'main'})
+    if request.user.is_authenticated:
+        return render(request, 'main/main_view.html',{})
+    else:            
+        if request.session['password_error'] == True:
+            request.session['password_error'] = False
+        else:
+            request.session['error_message'] = ''
+        return render(request, 'registration/login.html', {'message':'main'})
 
 def auth_login_next(request):
     username = request.POST['username']
     password = request.POST['password']
     user = authenticate(request, username=username, password=password)
-    print(user)
     if user is not None:
         login(request, user)
-        return render(request, 'main/main_view.html', {})
+        return user_main_view(request,user.id)
     else:
         request.session['error_message'] = 'El usuario y la contraseña no coinciden'
         request.session['password_error'] = True
@@ -65,18 +73,23 @@ def auth_reset_password(request):
         request.session['password_error'] = False
     else:
         request.session['error_message'] = ''
-
     return render(request, 'registration/set_password.html',{})
 
 def auth_save_new_password(request):
-    username=request.POST['username']
-    try:
-        user = User.objects.get(username=username)#get_object_or_404(User, username=username)
-    except (KeyError, User.DoesNotExist):
-        request.session['error_message'] = 'El usuario no existe en la base de datos'
+    password = request.POST['actual_password']
+    user = User.objects.get(id=request.user.id)
+    # try:
+    #     password_checked=request.user.check_password(password) #user = User.objects.get(id=request.user.id)#get_object_or_404(User, username=username)
+    # except (KeyError, User.DoesNotExist):
+    #     request.session['error_message'] = 'La contraseña no es correcta'
+    #     request.session['password_error'] = True
+    #     return redirect('main:reset_password')                
+    # else:
+    if not user.check_password(password):
+        request.session['error_message'] = 'La contraseña no es correcta'
         request.session['password_error'] = True
-        return redirect('main:reset_password')                
-    else:
+        return redirect('main:reset_password')
+    else :
         new_password = request.POST['new_password']
         new_password2 = request.POST['new_password2']
         if new_password == new_password2:     
@@ -87,3 +100,20 @@ def auth_save_new_password(request):
             request.session['error_message'] = 'las contraseñas no coinciden'
             request.session['password_error'] = True
             return redirect('main:reset_password')
+
+def prueba(request):
+    pass
+
+
+"""
+manuel
+clave: clave123
+
+sirius
+clave: sirius123
+
+shari
+clave: 12345678
+
+
+"""

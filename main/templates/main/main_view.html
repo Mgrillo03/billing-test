@@ -8,6 +8,12 @@
 </head>
 <body>
     <h1>Did it</h1>
-    <a href="{% url 'main:index'%}">inicio</a>
+    {{user.username}} <br>
+    {{user.first_name}}    {{user.last_name}} <br>
+    {{user.id}} <br>
+
+    <a href="{% url 'main:logout'%}">Logout</a><br>
+    <a href="{% url 'main:index'%}">inicio</a><br>
+    <a href="{% url 'main:reset_password' %}">Reset password</a><br>
 </body>
 </html>

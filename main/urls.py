@@ -13,7 +13,7 @@ urlpatterns = [
     #main/singup/next/
     path('singup/next/', views.singup_next, name='singup_next'),
     #main/view/
-    path('view', views.main_view, name='main_view'),
+    path('view/<int:user_id>', views.user_main_view, name='main_view'),
     #main/login/
     path('login/', views.auth_login, name='mylogin'),
     #main/login/next

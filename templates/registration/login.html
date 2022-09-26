@@ -18,14 +18,7 @@
 <form method="post" action="{% url 'main:login_next' %}">
 {% csrf_token %}
 
-<!-- <div>
-  <td>{{ form.username.label_tag }}</td>
-  <td>{{ form.username }}</td>
-</div>
-<div>
-  <td>{{ form.password.label_tag }}</td>
-  <td>{{ form.password }}</td>
-</div> -->
+
 <label for="username">username</label><br>
 <input type="text" name="username" placeholder="username" required><br>
 
@@ -38,5 +31,5 @@
 </div>
 </form>
 {{ request.session.error_message }}<br>
-<a href="{% url 'main:reset_password'%}">Olvide Contraseña</a><br>
+<a href="{% url 'reset_password'%}">Olvide Contraseña</a><br>
 <a href="{% url 'main:index'%}">inicio</a>
