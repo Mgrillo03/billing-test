@@ -24,11 +24,15 @@
 
         <label for="password">password</label><br>
         <input type="password" name="password" placeholder="*********" minlength="8" required><br>
+        
+        <label for="confirm_password">Confirm password</label><br>
+        <input type="password" name="confirm_password" placeholder="*********" minlength="8" required><br>
 
         <input type="submit" value="sing up">
 
 
     </form>
+    {{ request.session.error_message }} <br>
 
     <a href="{% url 'main:index' %}">Cancelar</a>
 </body>

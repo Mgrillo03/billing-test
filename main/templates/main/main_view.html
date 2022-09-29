@@ -7,13 +7,17 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Did it</h1>
-    {{user.username}} <br>
+    <h1>Hello {{user.username}}</h1>
+    <br>
     {{user.first_name}}    {{user.last_name}} <br>
-    {{user.id}} <br>
+    id: {{user.id}} <br>
+    {{request.user.pk}}
 
-    <a href="{% url 'main:logout'%}">Logout</a><br>
+    <br><br>
     <a href="{% url 'main:index'%}">inicio</a><br>
-    <a href="{% url 'main:reset_password' %}">Reset password</a><br>
+    <a href="{% url 'main:reset_password' %}">Change password</a><br>
+    <a href="{% url 'main:update_user' request.user.id %}">Update</a><br>
+    <br>
+    <a href="{% url 'main:logout'%}">Logout</a><br>
 </body>
 </html>

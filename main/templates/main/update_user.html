@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update {{request.user.username}}</title>
+</head>
+<body>
+    <h1>Update {{request.user.username}}</h1>
+
+
+    <form action="{% url 'main:update_user_save' user.id%}" method="post">
+        {% csrf_token %}
+        <label for="username">username</label><br>
+        <input type="text" name="username" value="{{user.username}}" required><br>
+        
+        <label for="first_name">Nombre</label><br>
+        <input type="text" name="first_name" value="{{user.first_name}}" required><br>
+
+        <label for="last_name">Apellido</label><br>
+        <input type="text" name="last_name" value="{{user.last_name }}" required><br>
+
+        <label for="email">Email</label><br>
+        <input type="email" name="email" value="{{user.email}}" required><br>
+
+        <input type="submit" value="update">
+    </form>
+    
+    {{ request.session.error_message }} <br>
+    {{request.session.success_message}} <br>
+    <a href="{% url 'main:main_view' user.id %}">Volver a User</a><br>
+
+</body>
+</html>
