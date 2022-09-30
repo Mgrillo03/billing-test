@@ -1,6 +1,3 @@
-import re
-from tabnanny import check
-from this import d
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -78,6 +75,7 @@ def singup_next(request):
 
 @login_required
 def user_main_view(request, user_id):
+    request = reset_messages(request)
     user = User.objects.get(id=user_id)
     return render(request, 'main/main_view.html', {
         'user':user,
@@ -158,11 +156,14 @@ def update_user(request, user_id):
 
 @login_required
 def update_user_save(request, user_id):
-    list_users = User.objects.all().exclude(pk=id)
+    list_users = User.objects.all().exclude(pk=user_id)
     new_username = request.POST['username']
     username_unique = check_username(new_username, list_users)
+    email = request.POST['email']
+    email_unique = check_email(email, list_users)
+
    
-    if username_unique:
+    if username_unique and email_unique:
         user = User.objects.get(id=request.user.id)
         user.username = request.POST['username']
         user.first_name = request.POST['first_name']
@@ -172,10 +173,41 @@ def update_user_save(request, user_id):
         request.session['success_message'] = 'Cambios guardados satisfactoriamente'
         request.session['message_shown'] = False
         return redirect('main:update_user', user_id)
-    else: 
+    elif not username_unique: 
         request.session['error_message'] = f'El username {new_username} no esta disponible'
         request.session['message_shown'] = False
         return redirect('main:update_user', user_id)
+    elif not email_unique:
+        request.session['error_message'] = f'El email {email} no esta disponible'
+        request.session['message_shown'] = False
+        return redirect('main:update_user', user_id)
+
+@login_required
+def delete_user(request,user_id):
+    if not request.session['message_shown'] :
+        request.session['message_shown'] = True
+    else:
+        request.session['error_message'] = ''
+        request.session['success_message'] = ''
+    return render(request, 'main/delete_user.html',{})
+
+@login_required
+def delete_user_save(request,user_id):
+    user = User.objects.get(pk=user_id)
+    password = request.POST['password']
+    if user.check_password(password):
+        logout(request)
+        user.delete()
+        request.session['success_message'] = 'Usuario eliminado satisfactoriamente'
+        request.session['message_shown'] = False        
+        return render(request, 'main/delete_user_saved.html',{})
+    else:
+        request.session['error_message'] = 'La contraseña es incorrecta'
+        request.session['message_shown'] = False        
+        return redirect('main:delete_user',user_id)
+
+    
+
 
 """
 manuel

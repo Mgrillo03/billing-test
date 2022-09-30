@@ -5,11 +5,16 @@ from django.contrib.auth import views as auth_views
 
 from main import views as main_views
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
+    #main
     path('', main_views.index, name='index'),
     path('main/', include('main.urls')),
+
+    #accounts
+    path('<int:user_id>/accounts/', include('accounts.urls')),
     #path('login/', auth_views.LoginView.as_view(), name='login'),
     #path('accounts/', include('django.contrib.auth.urls'))
 

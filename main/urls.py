@@ -34,5 +34,10 @@ urlpatterns = [
     path('reset-password/', views.auth_reset_password, name='reset_password'),
     #main/reset-password/success
     path('new-password/success/', views.auth_save_new_password, name='save_new_password'),
+
+    #main/delete-user/
+    path('<int:user_id>/delete-user/', views.delete_user, name='delete_user'),
+    #main/delete-user/
+    path('<int:user_id>/user-deleted/', views.delete_user_save, name='user_deleted'),
     
 ]

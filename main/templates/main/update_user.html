@@ -10,7 +10,7 @@
     <h1>Update {{request.user.username}}</h1>
 
 
-    <form action="{% url 'main:update_user_save' user.id%}" method="post">
+    <form action="{% url 'main:update_user_save' user.id %}" method="post">
         {% csrf_token %}
         <label for="username">username</label><br>
         <input type="text" name="username" value="{{user.username}}" required><br>
