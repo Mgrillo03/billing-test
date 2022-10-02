@@ -9,9 +9,12 @@
 <body>
     <h1>Index de Cuentas</h1><br>
     {% for account in list_accounts %}
-    Cuenta: {{account.name}} - banco: {{account.bank}} - balance: {{account.balance}}<br>
+    Cuenta: {{account.name}} - banco: {{account.bank}} - balance: {{account.balance}} 
+    <a href="{% url 'accounts:update_account' request.user.id account.id %}">update</a> 
+    <a href="{% url 'accounts:delete_account' request.user.id account.id %}">delete</a> <br>
          <br>
     {% endfor %}
+    {{request.session.success_message}} <br>
 
     <a href="{% url 'accounts:create_account' request.user.id %}">Nueva Cuenta</a><br><br>
     
