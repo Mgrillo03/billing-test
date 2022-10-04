@@ -7,15 +7,24 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Index de Cuentas</h1><br>
-    {% for account in list_accounts %}
+    <h1>Index de Cuentas</h1>
+    <h3>Balance: {{general_balance}}</h3><br>
+    {% for account in accounts_list %}
     Cuenta: {{account.name}} - banco: {{account.bank}} - balance: {{account.balance}} 
     <a href="{% url 'accounts:update_account' request.user.id account.id %}">update</a> 
-    <a href="{% url 'accounts:delete_account' request.user.id account.id %}">delete</a> <br>
+    <a href="{% url 'accounts:delete_account' request.user.id account.id %}">delete</a> 
          <br>
     {% endfor %}
-    {{request.session.success_message}} <br>
+    <br><br>
 
+    {% for operation in list_operations %}
+    {{operation.type}}: - monto: {{operation.amount}} - descripcion: {{operation.description}} <br>
+    {% endfor %}
+    {{request.session.success_message}} <br>
+    {{request.session.error_message}} <br>
+    <br><br>
+    <a href="{% url 'accounts:new_operation' request.user.id %}">Nueva Operacion</a><br><br>
+    <a href="{% url 'accounts:new_operation_transfer' request.user.id %}">Nueva Transferencia</a><br><br>
     <a href="{% url 'accounts:create_account' request.user.id %}">Nueva Cuenta</a><br><br>
     
     <a href="{% url 'main:index' %}">volver a inicio</a>

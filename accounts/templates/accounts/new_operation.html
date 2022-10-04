@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>New Operation</h1>
+    <form action="{% url 'accounts:new_operation_save' request.user.id %}" method="post">
+        {% csrf_token %}
+        <label for="account_name" >Cuenta:</label>
+        <input   list="account-list" name="account_name" placeholder="Selccione Opcion.." required>
+            <datalist id="account-list">
+                {% for account in accounts_list  %}
+                    <option value="{{account.name}}">{{account.balance}}</option>                
+                {% endfor %}  
+            </datalist><br><br>
+
+        {% if transfer %}
+        <label for="second_account_name" >Cuenta a transferir:</label>
+        <input   list="account-list" name="second_account_name" placeholder="Selccione Opcion.." required>
+        <br><br>
+        {% endif %}
+        <label for="type" >Tipo:</label>
+        <input   list="type-list" name="type" placeholder="Selccione Opcion.." required>
+            <datalist id="type-list">
+                <option value="Income"></option>                
+                <option value="Expense"></option>                
+                <option value="Transfer"></option>
+            </datalist><br><br>
+
+        <label for="amount">monto</label><br>
+        <input type="number" name="amount" placeholder="monto" required><br>
+        
+        <label for="description">description</label><br>
+        <input type="text" name="description" placeholder="description" required><br>
+
+        <label for="category">categoria</label><br>
+        <input list="category-list" name="category" placeholder="category" required><br>
+            <datalist id="category-list">
+                <option value="Comida"></option>                
+                <option value="Gastos"></option>                
+                <option value="Extra"></option>
+            </datalist>
+            
+        <input type="submit" value="Create">
+
+
+    </form>
+    {{ request.session.error_message }} <br>
+
+    <a href="{% url 'accounts:index' request.user.id%}">Cancelar</a>
+</body>
+</html>
