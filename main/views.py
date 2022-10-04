@@ -5,9 +5,20 @@ from django.contrib.auth.decorators import login_required
 
 
 def reset_messages(request):
-    request.session['message_shown'] = False
-    request.session['error_message'] = ''
-    return request
+    try : 
+        aux = request.session['message_shown']
+    except KeyError:
+        request.session['message_shown'] = False
+        request.session['error_message'] = ''
+        request.session['success_message'] = ''
+        return request
+    else:
+        if not request.session['message_shown'] :
+            request.session['message_shown'] = True
+        else:
+            request.session['error_message'] = ''
+            request.session['success_message'] = ''
+        return request
 
 def check_username(username,list_users):
     """
@@ -35,15 +46,13 @@ def index(request):
     })
 
 def singup(request):
-    if not request.session['message_shown'] :
-        request.session['message_shown'] = True
-    else:
-        request.session['error_message'] = ''
+    request = reset_messages(request)
     return render(request,'main/singup.html',{})
 
 def singup_next(request):
     list_users = User.objects.all()
     username = request.POST['username']
+    username = username.lower()
     username_unique = check_username(username, list_users)
     email = request.POST['email']
     email_unique = check_email(email, list_users)
@@ -52,10 +61,8 @@ def singup_next(request):
 
     
     if username_unique and email_unique and password == password_confirm:
-        username = request.POST['username']
         first_name = request.POST['first_name']
         last_name = request.POST['last_name']
-        email = request.POST['email']
         user = User.objects.create(username=username, email=email, password=password, first_name=first_name,last_name=last_name)
         user.set_password(password)
         user.save()   
@@ -85,14 +92,12 @@ def auth_login(request):
     if request.user.is_authenticated:
         return render(request, 'main/main_view.html',{})
     else:            
-        if not request.session['message_shown'] :
-            request.session['message_shown'] = True
-        else:
-            request.session['error_message'] = ''
+        request = reset_messages(request)
         return render(request, 'registration/login.html', {'message':'main'})
 
 def auth_login_next(request):
     username = request.POST['username']
+    username = username.lower()
     password = request.POST['password']
     user = authenticate(request, username=username, password=password)
     if user is not None:
@@ -114,10 +119,7 @@ def auth_reset_password(request):
     """
         Reset password using actual password
     """
-    if not request.session['message_shown'] :
-        request.session['message_shown'] = True
-    else:
-        request.session['error_message'] = ''
+    request = reset_messages(request)
     return render(request, 'registration/set_password.html',{})
 
 @login_required
@@ -147,17 +149,14 @@ def auth_save_new_password(request):
 @login_required
 def update_user(request, user_id):
     user = User.objects.get(id=user_id)
-    if not request.session['message_shown'] :
-        request.session['message_shown'] = True
-    else:
-        request.session['error_message'] = ''
-        request.session['success_message'] = ''
+    request = reset_messages(request)
     return render(request,'main/update_user.html',{'user':user})
 
 @login_required
 def update_user_save(request, user_id):
     list_users = User.objects.all().exclude(pk=user_id)
     new_username = request.POST['username']
+    new_username = new_username.lower()
     username_unique = check_username(new_username, list_users)
     email = request.POST['email']
     email_unique = check_email(email, list_users)
@@ -165,10 +164,10 @@ def update_user_save(request, user_id):
    
     if username_unique and email_unique:
         user = User.objects.get(id=request.user.id)
-        user.username = request.POST['username']
+        user.username = new_username
         user.first_name = request.POST['first_name']
         user.last_name = request.POST['last_name']
-        user.email = request.POST['email']
+        user.email = email
         user.save()
         request.session['success_message'] = 'Cambios guardados satisfactoriamente'
         request.session['message_shown'] = False
@@ -184,11 +183,7 @@ def update_user_save(request, user_id):
 
 @login_required
 def delete_user(request,user_id):
-    if not request.session['message_shown'] :
-        request.session['message_shown'] = True
-    else:
-        request.session['error_message'] = ''
-        request.session['success_message'] = ''
+    request = reset_messages(request)
     return render(request, 'main/delete_user.html',{})
 
 @login_required

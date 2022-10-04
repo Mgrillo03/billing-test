@@ -5,20 +5,26 @@ from django.contrib.auth.decorators import login_required
 from .models import Account, Operation_ac
 
 def reset_messages(request):
-
-    if not request.session['message_shown'] :
-        request.session['message_shown'] = True
-    else:
+    try : 
+        aux = request.session['message_shown']
+    except KeyError:
+        request.session['message_shown'] = False
         request.session['error_message'] = ''
         request.session['success_message'] = ''
-    return request
+    else:
+        if not request.session['message_shown'] :
+            request.session['message_shown'] = True
+        else:
+            request.session['error_message'] = ''
+            request.session['success_message'] = ''
+        return request
 
 def check_account_name(name,list_users):
     """
     check if account name is available in users account list
     """    
     for i in list_users:
-        if name == i.name:
+        if name.lower() == i.name.lower():
             return False
     return True
 
@@ -30,20 +36,13 @@ def get_general_balance(accounts_list):
 
 @login_required
 def index(request, user_id):
-    ## Inicializar variables cuando se abre la pagina, no importa el link
-    #request.session['message_shown'] = False
-    #request = reset_messages(request)
     accounts_list = Account.objects.filter(user=request.user)
-    list_operations = Operation_ac.objects.all()
+    operations_list = Operation_ac.objects.filter(account__in=accounts_list).order_by('-created_at')
     general_balance = get_general_balance(accounts_list)
-    if not request.session['message_shown'] :
-        request.session['message_shown'] = True
-    else:
-        request.session['error_message'] = ''
-        request.session['success_message'] = ''
+    request = reset_messages(request)
     return render(request, 'accounts/index.html',{
         'accounts_list':accounts_list,
-        'list_operations': list_operations,
+        'operations_list': operations_list,
         'general_balance': general_balance,
     })
 
@@ -70,6 +69,21 @@ def create_account_save(request,user_id):
         request.session['error_message'] = 'Ya tenes una cuenta con ese nombre'
         request.session['message_shown'] = False        
         return redirect('accounts:create_account',user_id)
+
+@login_required
+def account_detail(request, user_id, account_id):
+    try:
+        account = Account.objects.get(pk=account_id)
+    except (KeyError, Account.DoesNotExist):
+        request.session['error_message'] = 'No se encontro la cuenta'
+        request.session['message_shown'] = False
+        return redirect('accounts:index', user_id)
+    else:
+        operations_list = Operation_ac.objects.filter(account=account)
+        return render(request, 'accounts/account_detail.html',{
+            'account': account,
+            'operations_list': operations_list,
+        })
 
 @login_required
 def update_account(request, user_id, account_id):
@@ -119,17 +133,9 @@ def delete_account_save(request,user_id,account_id):
 def new_operation(request, user_id):
     request = reset_messages(request)
     accounts_list = Account.objects.filter(user=request.user)
+    print(accounts_list)
     return render(request, 'accounts/new_operation.html', {
         'accounts_list': accounts_list,
-    })
-
-@login_required
-def new_operation_transfer(request, user_id):
-    request = reset_messages(request)
-    accounts_list = Account.objects.filter(user=request.user)
-    return render(request, 'accounts/new_operation.html', {
-        'accounts_list': accounts_list,
-        'transfer' : True
     })
 
 @login_required
@@ -141,20 +147,13 @@ def new_operation_save(request, user_id):
     if type of operation is an income it add the amount to the account balance
 
     if type of operation is an spense it take the amount from the account balance
-
-    if type of operation is transfer it goes to new transfer
-    creates a second operation:
-        the first take the money from the first account 
-        the second get the money in to the second account
-
-    
     """
     try:
-        account = Account.objects.get(name=request.POST['account_name'])
+        account = Account.objects.get(name=request.POST['account_name'],user=User.objects.get(pk=user_id))
     except (KeyError, Account.DoesNotExist):
         request.session['error_message'] = 'Por favor seleccione una cuenta de la lista'
         request.session['message_shown'] = False
-        return redirect('accounts:index', user_id)
+        return redirect('accounts:new_operation', user_id)
     else:
         amount = float(request.POST['amount'])
         type = request.POST['type']
@@ -172,25 +171,27 @@ def new_operation_save(request, user_id):
             category = request.POST['category']
             Operation_ac.objects.create(description=description, type=type, category=category, amount=amount, account=account)
             return redirect('accounts:index', user_id)
-        elif type == 'Transfer':
-            return new_transfer(request, user_id)
 
-        
+@login_required
+def new_operation_transfer(request, user_id):
+    request = reset_messages(request)
+    accounts_list = Account.objects.filter(user=request.user)
+    return render(request, 'accounts/new_transfer.html', {
+        'accounts_list': accounts_list,
+    })
 
-
-def new_transfer(request, user_id):
+def new_transfer_save(request, user_id):
     """
-        if the accounts are diferents
+        if the two accounts are diferents then
 
         it creates a two operations:        
-        the first take the money from the first account 
-        the second get the money in to the second account
+        Expense: the first take the money from the first account 
+        Income: the second get the money in to the second account
     """
-    account = Account.objects.get(name=request.POST['account_name'])
+    account = Account.objects.get(name=request.POST['account_name'],user=User.objects.get(pk=user_id))
     amount = float(request.POST['amount'])
-    type = request.POST['type']
     try:
-        second_account = Account.objects.get(name=request.POST['second_account_name'])
+        second_account = Account.objects.get(name=request.POST['second_account_name'],user=User.objects.get(pk=user_id))
     except (KeyError, Account.DoesNotExist):
         request.session['error_message'] = 'Por favor seleccione una cuenta de la lista'
         request.session['message_shown'] = False
@@ -202,12 +203,13 @@ def new_transfer(request, user_id):
             second_account.balance += amount
             second_account.save()
             description = f'{account.name} => {second_account.name}'
-            Operation_ac.objects.create(description=description, type=type, amount=amount, account=account)
-            Operation_ac.objects.create(description=description, type=type, amount=amount, account=second_account)
+            description_2 = f'{second_account.name} <= {account.name}'
+            Operation_ac.objects.create(description=description, type='Expense', amount=amount, account=account)
+            Operation_ac.objects.create(description=description_2, type='Income', amount=amount, account=second_account)
             request.session['success_message']='Transferencia creada correctamente'
             request.session['message_shown']= False
             return redirect('accounts:index', user_id)
         else: 
             request.session['error_message'] = 'Las cuentas no pueden ser iguales'
             request.session['message_shown'] = False
-            return redirect('accounts:index', user_id)
+            return redirect('accounts:new_operation_transfer', user_id)

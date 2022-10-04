@@ -7,8 +7,8 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>New Operation</h1>
-    <form action="{% url 'accounts:operation_created' request.user.id %}" method="post">
+    <h1>Transferencia</h1>
+    <form action="{% url 'accounts:transfer_created' request.user.id %}" method="post">
         {% csrf_token %}
         <label for="account_name" >Cuenta:</label>
         <input   list="account-list" name="account_name" placeholder="Selccione Opcion.." required>
@@ -18,12 +18,15 @@
                 {% endfor %}  
             </datalist><br><br>
 
-        <label for="type" >Tipo:</label>
-        <input   list="type-list" name="type" placeholder="Selccione Opcion.." required>
-            <datalist id="type-list">
-                <option value="Income"></option>                
-                <option value="Expense"></option>                
-            </datalist><br><br>
+        
+        <label for="second_account_name" >Cuenta a transferir:</label>
+        <input   list="account-list" name="second_account_name" placeholder="Selccione Opcion.." required>
+        <datalist id="account-list">
+            {% for account in accounts_list  %}
+                <option value="{{account.name}}">{{account.balance}}</option>                
+            {% endfor %}  
+        </datalist>
+        <br><br>
 
         <label for="amount">monto</label><br>
         <input type="number" name="amount" placeholder="monto" required><br>
@@ -37,6 +40,7 @@
                 <option value="Comida"></option>                
                 <option value="Gastos"></option>                
                 <option value="Extra"></option>
+                <option value="Otros"></option>
             </datalist>
             
         <input type="submit" value="Create">

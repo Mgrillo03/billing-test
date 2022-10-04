@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Cuenta: {{account.name}}</h1>
+    <h3>Balance: {{account.balance}}</h3>
+    <div>
+        descripcion: {{account.description}} <br>
+        banco: {{account.bank}} <br>
+    </div> 
+    <br><br>
+    <div>
+        {% for operation in operations_list %}
+        {{operation.type}}: - monto: {{operation.amount}} - descripcion: {{operation.description}} <br>
+        {% endfor %}
+    </div>
+    <br><br>
+    <a href="{% url 'accounts:index' request.user.id%}">Volver</a>
+
+
+</body>
+</html>

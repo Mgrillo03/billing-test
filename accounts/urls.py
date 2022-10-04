@@ -15,6 +15,9 @@ urlpatterns = [
     #/user-id/account/created
     path('created/', views.create_account_save, name='account_created'),
 
+    #/user-id/account/account-id/detail/
+    path('<int:account_id>/detail', views.account_detail, name='account_detail'),
+    
     #user-id/account/account-id/update
     path('<int:account_id>/update/', views.update_account, name='update_account'),
     #user-id/account/account-id/update
@@ -29,8 +32,10 @@ urlpatterns = [
     #/user-id/operation/new
     path('operation/new/', views.new_operation, name='new_operation'),
     #/user-id/opertion/created
-    path('operation/created/', views.new_operation_save, name='new_operation_save'),
+    path('operation/created/', views.new_operation_save, name='operation_created'),
     #/user-id/operation/new-transfer
-    path('operation/new-transfer', views.new_operation_transfer, name='new_operation_transfer'),
+    path('operation/new-transfer/', views.new_operation_transfer, name='new_operation_transfer'),
+    #/user-id/operation/transfer-created/
+    path('operation/transfer-created/', views.new_transfer_save, name='transfer_created'),
 
 ]

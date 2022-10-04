@@ -11,14 +11,15 @@
     <h3>Balance: {{general_balance}}</h3><br>
     {% for account in accounts_list %}
     Cuenta: {{account.name}} - banco: {{account.bank}} - balance: {{account.balance}} 
+    <a href="{% url 'accounts:account_detail' request.user.id account.id %}">view</a> 
     <a href="{% url 'accounts:update_account' request.user.id account.id %}">update</a> 
     <a href="{% url 'accounts:delete_account' request.user.id account.id %}">delete</a> 
          <br>
     {% endfor %}
     <br><br>
 
-    {% for operation in list_operations %}
-    {{operation.type}}: - monto: {{operation.amount}} - descripcion: {{operation.description}} <br>
+    {% for operation in operations_list %}
+    {{operation.created_at}} - {{operation.type}}: - monto: {{operation.amount}} - descripcion: {{operation.description}} <br>
     {% endfor %}
     {{request.session.success_message}} <br>
     {{request.session.error_message}} <br>
