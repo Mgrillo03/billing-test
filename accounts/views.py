@@ -213,3 +213,55 @@ def new_transfer_save(request, user_id):
             request.session['error_message'] = 'Las cuentas no pueden ser iguales'
             request.session['message_shown'] = False
             return redirect('accounts:new_operation_transfer', user_id)
+
+def operation_detail(request, user_id, operation_id):
+    try:
+        operation = Operation_ac.objects.get(pk=operation_id)
+    except (KeyError, Operation_ac.DoesNotExist):
+        request.session['error_message'] = 'No se encontro la operacion selccionada'
+        request.session['message_shown'] = False
+        return redirect('accounts:index', user_id)
+    else:
+        request = reset_messages(request)
+        return redirect(request, 'accounts/operation_detail.html',{
+            'operation': operation,
+        })
+
+def update_operation(request, user_id, operation_id):
+    try:
+        operation = Operation_ac.objects.get(pk=operation_id)
+    except (KeyError, Operation_ac.DoesNotExist):
+        request.session['error_message'] = 'No se encontro la operacion selccionada'
+        request.session['message_shown'] = False
+        return redirect('accounts:index', user_id)
+    else:
+        request = reset_messages(request)
+        return redirect(request, 'accounts/update_operation.html',{
+            'operation': operation,
+        })
+
+def update_operation_save(request, user_id, operation_id):
+    operation = Operation_ac.objects.get(pk=operation_id)
+    account = Account.objects.get(pk=operation.account.pk)
+    amount = float(request.POST['amount'])
+    if type == 'Income':
+        account.balance -= operation.amount
+        account.balance += amount
+        account.save()
+        operation.amount = amount
+        operation.description = request.POST['description']
+        operation.category = request.POST['category']
+        operation.save()
+        return redirect('accounts:index', user_id)
+    elif operation.type == 'Expense':
+        account.balance += operation.amount
+        account.balance -= amount
+        account.save()
+        operation.amount = amount
+        operation.description = request.POST['description']
+        operation.category = request.POST['category']
+        operation.save()
+        return redirect('accounts:index', user_id)
+
+        #### Falta el caso para las transfer, agregar al urls.py y escribir los html
+
