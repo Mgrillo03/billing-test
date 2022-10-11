@@ -18,7 +18,12 @@
 
         <label for="bank">bank</label><br>
         <input type="text" name="bank" value="{{account.bank}}" required><br>
-  
+
+        <label for="balance">balance</label><br>
+        <input type="number" step="0.01" name="balance" value="{{account.balance}}" required><br><br>
+
+        <input type="checkbox" name="balance_checkbox" value="True" checked>  
+        <label for="balance_checkbox">Crear operacion para ajustar el balance</label><br><br>
 
         <input type="submit" value="Update">
     </form>

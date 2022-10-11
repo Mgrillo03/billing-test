@@ -26,7 +26,7 @@
             </datalist><br><br>
 
         <label for="amount">monto</label><br>
-        <input type="number" name="amount" placeholder="monto" required><br>
+        <input type="number" step="0.01" name="amount" placeholder="monto" required><br>
         
         <label for="description">description</label><br>
         <input type="text" name="description" placeholder="description" required><br>
@@ -34,10 +34,11 @@
         <label for="category">categoria</label><br>
         <input list="category-list" name="category" placeholder="category" required><br>
             <datalist id="category-list">
-                <option value="Comida"></option>                
-                <option value="Gastos"></option>                
-                <option value="Extra"></option>
-            </datalist>
+                {% for category in category_list  %}
+                    <option value="{{category.name}}">{{category.balance}}</option>                
+                {% endfor %}  
+            </datalist><br><br>
+
             
         <input type="submit" value="Create">
 

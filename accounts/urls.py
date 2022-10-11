@@ -29,6 +29,7 @@ urlpatterns = [
     path('<int:account_id>/delete-success/', views.delete_account_save, name='account_deleted'),
 
     #----------- Operations -----------#
+    ##  Create
     #/user-id/operation/new
     path('operation/new/', views.new_operation, name='new_operation'),
     #/user-id/opertion/created
@@ -37,5 +38,23 @@ urlpatterns = [
     path('operation/new-transfer/', views.new_operation_transfer, name='new_operation_transfer'),
     #/user-id/operation/transfer-created/
     path('operation/transfer-created/', views.new_transfer_save, name='transfer_created'),
+
+    ##  Details
+    #/user-id/operation/operation-id/detail/
+    path('operation/<int:operation_id>/detail/', views.operation_detail, name='operation_detail'),
+
+    ##  Update
+    #user-id/operation/operation-id/update/
+    path('operation/<int:operation_id>/update/', views.update_operation, name="update_operation"),
+    #user-id/operation/operation-id/update-transfer/
+    path('operation/<int:operation_id>/update-transfer/', views.update_transfer, name="update_transfer"),
+    #user-id/operation/operation-id/update-saved/
+    path('operation/<int:operation_id>/update-saved/',views.update_operation_save, name='update_operation_save'),
+
+    ##  Delete
+    #user-id/operation/operation-id/confirm-delete/
+    path('operation/<int:operation_id>/confirm-delete/', views.confirm_operation_delete, name='confirm_operation_delete'),
+    #user-id/operation/operation-deleted/
+    path('operation/<int:operation_id>/operation-deleted/', views.delete_operation, name='delete_operation'),
 
 ]

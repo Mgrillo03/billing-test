@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Update Operation</h1>
+    <form action="{% url 'accounts:update_operation_save' request.user.id operation.id %}" method="post">
+        {% csrf_token %}
+        <label for="account_name" >Cuenta:</label>
+        <input   type="text" name="account_name" value="{{operation.account.name}}" readonly>
+        <br>
+        {% if second_operation %}
+            <label for="account_name" >Cuenta:</label>
+            <input   type="text" name="account_name" value="{{second_operation.account.name}}" readonly>
+        {% endif %}
+        <br>
+        <label for="type" >Tipo:</label>
+        <input   type="text" name="type" value="{{operation.type}}" readonly>
+    
+        <br>
+        <label for="amount">monto</label><br>
+        <input type="number" step="0.01" name="amount" value="{{operation.amount}}" required><br>
+        
+        <label for="description">description</label><br>
+        <input type="text" name="description" value="{{operation.description}}" readonly><br>
+
+        {% if not second_operation %}
+        <label for="category">categoria</label><br>
+        <input list="category-list" name="category" value="{{operation.category.name}}" ><br>
+            <datalist id="category-list">
+                {% for category in category_list  %}
+                    <option value="{{category.name}}">{{category.name}}</option>                
+                {% endfor %}  
+            </datalist><br>
+        {% endif %}
+                
+        <input type="submit" value="Guardar">
+
+
+    </form>
+    {{request.session.success_message}} <br>
+    {{request.session.error_message}} <br> <br>
+
+    <a href="{% url 'accounts:index' request.user.id%}">Cancelar</a>
+</body>
+</html>
