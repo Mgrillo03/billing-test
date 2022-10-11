@@ -14,7 +14,7 @@
         <input   list="account-list" name="account_name" placeholder="Selccione Opcion.." required>
             <datalist id="account-list">
                 {% for account in accounts_list  %}
-                    <option value="{{account.name}}">{{account.balance}}</option>                
+                    <option value="{{account.name}}">{{account.name}} | ${{account.balance}}</option>                
                 {% endfor %}  
             </datalist><br><br>
 
@@ -31,8 +31,6 @@
         <label for="amount">monto</label><br>
         <input type="number" step="0.01" name="amount" placeholder="monto" required><br>
         
-        <label for="description">description</label><br>
-        <input type="text" name="description" placeholder="description" required><br>
             
         <input type="submit" value="Create">
 

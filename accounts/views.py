@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
 from .models import Account, Operation_ac, Category
+#Eliminar todas las referencias de user_id
 
 def reset_messages(request):
     try : 
@@ -208,10 +209,10 @@ def new_transfer_save(request, user_id):
         Expense: the first take the money from the first account 
         Income: the second get the money in to the second account
     """
-    account = Account.objects.get(name=request.POST['account_name'],user=User.objects.get(pk=user_id))
+    account = Account.objects.get(name=request.POST['account_name'],user=request.user)
     amount = float(request.POST['amount'])
     try:
-        second_account = Account.objects.get(name=request.POST['second_account_name'],user=User.objects.get(pk=user_id))
+        second_account = Account.objects.get(name=request.POST['second_account_name'],user=request.user)
     except (KeyError, Account.DoesNotExist):
         request.session['error_message'] = 'Por favor seleccione una cuenta de la lista'
         request.session['message_shown'] = False
@@ -291,9 +292,9 @@ def update_transfer(request, user_id, operation_id):
 def update_operation_save(request, user_id, operation_id):
     operation = Operation_ac.objects.get(pk=operation_id)
     account = Account.objects.get(pk=operation.account.pk)
-    category = Category.objects.get(name=request.POST['category'], user=request.user)
     amount = float(request.POST['amount'])
     if operation.type == 'Income':
+        category = Category.objects.get(name=request.POST['category'], user=request.user)
         account.balance -= operation.amount
         account.balance += amount
         account.save()
@@ -305,6 +306,7 @@ def update_operation_save(request, user_id, operation_id):
         request.session['message_shown']= False
         return redirect('accounts:update_operation', user_id, operation_id)
     elif operation.type == 'Expense':
+        category = Category.objects.get(name=request.POST['category'], user=request.user)
         account.balance += operation.amount
         account.balance -= amount
         account.save()
