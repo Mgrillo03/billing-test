@@ -7,12 +7,12 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Categoria: {{category.name}}</h1>
-    Total de gastos: {{total_expenses}}
-    Total de ingresos: {{total_incomes}}
-    
-    <br><br>
+    <h1>Estas a punto de eliminar la categoria {{category.name}}</h1>
 
-    <a href="{% url 'accounts:user_categories' %}">Volver</a>
+    <h3>seguro deseas continuar?</h3>
+    <a href="{% url 'accounts:delete_category' category.id %}">Si</a>
+    <a href="{% url 'accounts:user_categories' %}">No</a>
+
+
 </body>
 </html>

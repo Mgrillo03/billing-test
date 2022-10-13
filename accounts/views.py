@@ -1,3 +1,4 @@
+from ast import If
 from logging import captureWarnings
 from unicodedata import category
 from django.shortcuts import render, redirect
@@ -184,23 +185,30 @@ def new_operation_save(request):
         return redirect('accounts:new_operation')
     else:
         amount = float(request.POST['amount'])
+        date = request.POST['date']
+        if date:
+            print(date)
+        else:
+            print('nop')
+
+
         type = request.POST['type']
         request = reset_messages(request)
         if type == 'Income':
             account.balance+= amount
-            account.save()
+            #ccount.save()
             description = request.POST['description']
-            Operation_ac.objects.create(description=description, type=type, category=category, amount=amount, account=account)
+            #Operation_ac.objects.create(description=description, type=type, category=category, amount=amount, account=account)
             request.session['success_message']='Ingreso agreado correctamente'
             request.session['message_shown']= False
             return redirect('accounts:index')
         elif type == 'Expense':
             account.balance-= amount
-            account.save()
+            #account.save()
             description = request.POST['description']
             request.session['success_message']='Gasto agreado correctamente'
             request.session['message_shown']= False
-            Operation_ac.objects.create(description=description, type=type, category=category, amount=amount, account=account)
+            #Operation_ac.objects.create(description=description, type=type, category=category, amount=amount, account=account)
             return redirect('accounts:index')
 
 @login_required
@@ -273,7 +281,7 @@ def update_operation(request, operation_id):
         request = reset_messages(request)
         request.session['error_message'] = 'No se encontro la operacion selccionada'
         request.session['message_shown'] = False
-        return redirect('accounts:index')
+        return redirect('accounts:user_categories')
     else:
         if 'Transfer' in operation.type:
             request = reset_messages(request)
@@ -530,9 +538,12 @@ def update_category_save(request,category_id):
             return redirect('accounts:user_categories')
 
 @login_required
-def confirm_category_delete(request):
+def confirm_category_delete(request, category_id):
+    category = Category.objects.get(pk=category_id)
     request = reset_messages(request)
-    return render(request, 'accounts/confirm_category_delete.html',{})
+    return render(request, 'accounts/confirm_category_delete.html',{
+        'category': category,
+    })
 
 @login_required
 def delete_category(request, category_id):

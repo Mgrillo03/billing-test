@@ -79,9 +79,10 @@ urlpatterns = [
     path('category/<int:category_id>/update-saved/', views.update_category_save, name='update_category_save'),
 
     ## Delete
-    
-
-    
+    #category/category_id/confirm-delete
+    path('category/<int:category_id>/confirm-delete/', views.confirm_category_delete, name='confirm_category_delete'),
+    #category/category_id/deleted/
+    path('category/<int:category_id>/deleted/', views.delete_category, name='delete_category'),    
 
 
 ]
