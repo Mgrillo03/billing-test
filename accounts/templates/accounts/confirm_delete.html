@@ -13,8 +13,8 @@
 
     </div>
     <h3>Estas a punto de eliminar la operacion ¿estas seguro que deseas continuar?</h3>
-    <a href="{% url 'accounts:delete_operation' request.user.id operation.id %}">Si</a><br><br>
-    <a href="{% url 'accounts:index' request.user.id %}">No</a><br><br>
+    <a href="{% url 'accounts:delete_operation'  operation.id %}">Si</a><br><br>
+    <a href="{% url 'accounts:index'  %}">No</a><br><br>
 
 
 </body>

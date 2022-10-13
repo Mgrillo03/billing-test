@@ -11,26 +11,26 @@
     <h3>Balance: ${{general_balance}}</h3><br>
     {% for account in accounts_list %}
     {{account.pk}} Cuenta: {{account.name}} - banco: {{account.bank}} - balance: ${{account.balance}} 
-    <a href="{% url 'accounts:account_detail' request.user.id account.id %}">view</a> 
-    <a href="{% url 'accounts:update_account' request.user.id account.id %}">update</a> 
-    <a href="{% url 'accounts:delete_account' request.user.id account.id %}">delete</a> 
+    <a href="{% url 'accounts:account_detail'  account.id %}">view</a> 
+    <a href="{% url 'accounts:update_account'  account.id %}">update</a> 
+    <a href="{% url 'accounts:delete_account'  account.id %}">delete</a> 
          <br>
     {% endfor %}
     <br><br>
 
     {% for operation in operations_list %}
     {{operation.created_at}} - {{operation.account.name}}: {{operation.type}}: - monto: ${{operation.amount}} - descripcion: {{operation.description}} - categoria: {{operation.category.name}} 
-    <a href="{% url 'accounts:operation_detail' request.user.id operation.id %}">view</a> 
-    <a href="{% url 'accounts:update_operation' request.user.id operation.id %}">update</a> 
-    <a href="{% url 'accounts:confirm_operation_delete' request.user.id operation.id %}">delete</a> 
+    <a href="{% url 'accounts:operation_detail'  operation.id %}">view</a> 
+    <a href="{% url 'accounts:update_operation'  operation.id %}">update</a> 
+    <a href="{% url 'accounts:confirm_operation_delete'  operation.id %}">delete</a> 
     <br>
     {% endfor %}
     {{request.session.success_message}} <br>
     {{request.session.error_message}} <br>
     <br><br>
-    <a href="{% url 'accounts:new_operation' request.user.id %}">Nueva Operacion</a><br><br>
-    <a href="{% url 'accounts:new_operation_transfer' request.user.id %}">Nueva Transferencia</a><br><br>
-    <a href="{% url 'accounts:create_account' request.user.id %}">Nueva Cuenta</a><br><br>
+    <a href="{% url 'accounts:new_operation'  %}">Nueva Operacion</a><br><br>
+    <a href="{% url 'accounts:new_operation_transfer'  %}">Nueva Transferencia</a><br><br>
+    <a href="{% url 'accounts:create_account'  %}">Nueva Cuenta</a><br><br>
     
     <a href="{% url 'main:index' %}">volver a inicio</a>
 

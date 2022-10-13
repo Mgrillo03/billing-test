@@ -8,7 +8,7 @@
 </head>
 <body>
     <h1>New Account</h1>
-    <form action="{% url 'accounts:account_updated' request.user.id account.id %}" method="post">
+    <form action="{% url 'accounts:account_updated'  account.id %}" method="post">
         {% csrf_token %}
         <label for="name">Account name</label><br>
         <input type="text" name="name" value="{{account.name}}" required><br>
@@ -31,6 +31,6 @@
     {{ request.session.success_message }} <br>
 
 
-    <a href="{% url 'accounts:index' request.user.id%}">Volver</a>
+    <a href="{% url 'accounts:index' %}">Volver</a>
 </body>
 </html>

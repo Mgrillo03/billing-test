@@ -81,9 +81,9 @@ def singup_next(request):
         return redirect('main:singup')
 
 @login_required
-def user_main_view(request, user_id):
+def user_main_view(request):
     request = reset_messages(request)
-    user = User.objects.get(id=user_id)
+    user = User.objects.get(id=request.user.id)
     return render(request, 'main/main_view.html', {
         'user':user,
     })
@@ -102,7 +102,7 @@ def auth_login_next(request):
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
-        return user_main_view(request,user.id)
+        return user_main_view(request)
     else:
         request.session['error_message'] = 'El usuario y la contraseña no coinciden'
         request.session['message_shown'] = False
@@ -147,14 +147,14 @@ def auth_save_new_password(request):
             return redirect('main:reset_password')
 
 @login_required
-def update_user(request, user_id):
-    user = User.objects.get(id=user_id)
+def update_user(request):
+    user = User.objects.get(id=request.user.id)
     request = reset_messages(request)
     return render(request,'main/update_user.html',{'user':user})
 
 @login_required
-def update_user_save(request, user_id):
-    list_users = User.objects.all().exclude(pk=user_id)
+def update_user_save(request):
+    list_users = User.objects.all().exclude(pk=request.user.id)
     new_username = request.POST['username']
     new_username = new_username.lower()
     username_unique = check_username(new_username, list_users)
@@ -171,15 +171,15 @@ def update_user_save(request, user_id):
         user.save()
         request.session['success_message'] = 'Cambios guardados satisfactoriamente'
         request.session['message_shown'] = False
-        return redirect('main:update_user', user_id)
+        return redirect('main:update_user')
     elif not username_unique: 
         request.session['error_message'] = f'El username {new_username} no esta disponible'
         request.session['message_shown'] = False
-        return redirect('main:update_user', user_id)
+        return redirect('main:update_user')
     elif not email_unique:
         request.session['error_message'] = f'El email {email} no esta disponible'
         request.session['message_shown'] = False
-        return redirect('main:update_user', user_id)
+        return redirect('main:update_user')
 
 @login_required
 def delete_user(request,user_id):

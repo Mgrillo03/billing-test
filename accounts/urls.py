@@ -47,7 +47,7 @@ urlpatterns = [
     #user-id/operation/operation-id/update/
     path('operation/<int:operation_id>/update/', views.update_operation, name="update_operation"),
     #user-id/operation/operation-id/update-transfer/
-    path('operation/<int:operation_id>/update-transfer/', views.update_transfer, name="update_transfer"),
+    #path('operation/<int:operation_id>/update-transfer/', views.update_transfer, name="update_transfer"),
     #user-id/operation/operation-id/update-saved/
     path('operation/<int:operation_id>/update-saved/',views.update_operation_save, name='update_operation_save'),
 
@@ -56,5 +56,32 @@ urlpatterns = [
     path('operation/<int:operation_id>/confirm-delete/', views.confirm_operation_delete, name='confirm_operation_delete'),
     #user-id/operation/operation-deleted/
     path('operation/<int:operation_id>/operation-deleted/', views.delete_operation, name='delete_operation'),
+
+    #----------- Categories -----------#
+    ## View 
+    #category/
+    path('category/',views.user_categories, name='user_categories'),
+    
+    ## Details
+    #category/category_id/detail/
+    path('category/<int:category_id>/detail/', views.category_detail, name='category_detail'),
+
+    ## Create
+    #category/new/
+    path('category/new/', views.new_category, name='new_category'),
+    #category/created/
+    path('category/created/', views.new_category_save, name='new_category_save'),
+
+    ## Update
+    #category/category_id/update
+    path('category/<int:category_id>/update', views.update_category, name='update_category'),
+    #category/category_id/update-saved/
+    path('category/<int:category_id>/update-saved/', views.update_category_save, name='update_category_save'),
+
+    ## Delete
+    
+
+    
+
 
 ]

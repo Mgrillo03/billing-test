@@ -8,7 +8,7 @@
 </head>
 <body>
     <h1>Update Operation</h1>
-    <form action="{% url 'accounts:update_operation_save' request.user.id operation.id %}" method="post">
+    <form action="{% url 'accounts:update_operation_save' operation.id %}" method="post">
         {% csrf_token %}
         <label for="account_name" >Cuenta:</label>
         <input   type="text" name="account_name" value="{{operation.account.name}}" readonly>
@@ -36,6 +36,8 @@
                     <option value="{{category.name}}">{{category.name}}</option>                
                 {% endfor %}  
             </datalist><br>
+        {% else %}
+        <input type="hidden" name="category" value="transfer" ><br>
         {% endif %}
                 
         <input type="submit" value="Guardar">
@@ -45,6 +47,6 @@
     {{request.session.success_message}} <br>
     {{request.session.error_message}} <br> <br>
 
-    <a href="{% url 'accounts:index' request.user.id%}">Cancelar</a>
+    <a href="{% url 'accounts:index' }">Cancelar</a>
 </body>
 </html>

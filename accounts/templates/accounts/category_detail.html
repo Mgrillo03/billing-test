@@ -7,10 +7,9 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Estas a punto de eliminar la cuenta permanentemente</h1>
-    <h3>Deseas continuar?</h3>
-    <a href="{% url 'accounts:account_deleted' account_id%}">Si</a><br><br>
-    <a href="{% url 'accounts:index' %}">No</a><br><br>
-    
+    <h1>Categoria: {{category.name}}</h1>
+    Total de gastos: {{total_expenses}}
+    Total de ingresos: {{total_incomes}}
+
 </body>
 </html>

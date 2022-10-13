@@ -1,3 +1,5 @@
+from logging import captureWarnings
+from unicodedata import category
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -20,11 +22,11 @@ def reset_messages(request):
             request.session['success_message'] = ''
         return request
 
-def check_account_name(name,list_users):
+def check_name(name,list):
     """
     check if account name is available in users account list
     """    
-    for i in list_users:
+    for i in list:
         if name.lower() == i.name.lower():
             return False
     return True
@@ -36,7 +38,7 @@ def get_general_balance(accounts_list):
     return balance
 
 @login_required
-def index(request, user_id):
+def index(request):
     accounts_list = Account.objects.filter(user=request.user)
     operations_list = Operation_ac.objects.filter(account__in=accounts_list).order_by('-created_at')
     general_balance = get_general_balance(accounts_list)
@@ -47,16 +49,18 @@ def index(request, user_id):
         'general_balance': general_balance,
     })
 
+################ Accounts
 @login_required
-def create_account(request, user_id):
+def create_account(request):
     request = reset_messages(request)
     return render(request, 'accounts/new_account.html',{})
 
 @login_required
-def create_account_save(request,user_id):
+def create_account_save(request):
+    request = reset_messages(request)
     list_accounts = Account.objects.filter(user=request.user)
     name = request.POST['name']
-    account_name_unique = check_account_name(name, list_accounts)
+    account_name_unique = check_name(name, list_accounts)
 
     if account_name_unique:
         initial_balance= float(request.POST['initial_balance'])
@@ -66,20 +70,22 @@ def create_account_save(request,user_id):
         account = Account.objects.create(name=name, description= description, balance = initial_balance, bank=bank, user=user)
 
         return render(request,'accounts/account_created.html',{'account':account})
-    else:
+    else:   
         request.session['error_message'] = 'Ya tenes una cuenta con ese nombre'
         request.session['message_shown'] = False        
-        return redirect('accounts:create_account',user_id)
+        return redirect('accounts:create_account')
 
 @login_required
-def account_detail(request, user_id, account_id):
+def account_detail(request, account_id):
     try:
         account = Account.objects.get(pk=account_id)
     except (KeyError, Account.DoesNotExist):
+        request = reset_messages(request)
         request.session['error_message'] = 'No se encontro la cuenta'
         request.session['message_shown'] = False
-        return redirect('accounts:index', user_id)
+        return redirect('accounts:index')
     else:
+        request = reset_messages(request)
         operations_list = Operation_ac.objects.filter(account=account)
         return render(request, 'accounts/account_detail.html',{
             'account': account,
@@ -87,16 +93,17 @@ def account_detail(request, user_id, account_id):
         })
 
 @login_required
-def update_account(request, user_id, account_id):
+def update_account(request, account_id):
     account = Account.objects.get(id=account_id)
     request = reset_messages(request)
     return render(request,'accounts/update_account.html',{'account':account})
 
 @login_required
-def update_account_save(request, user_id, account_id):
+def update_account_save(request, account_id):
+    request = reset_messages(request)
     list_accounts = Account.objects.filter(user=request.user).exclude(pk=account_id)
     new_account_name = request.POST['name']
-    account_name_unique = check_account_name(new_account_name, list_accounts)
+    account_name_unique = check_name(new_account_name, list_accounts)
    
     if account_name_unique :
         account = Account.objects.get(id=account_id)
@@ -126,27 +133,29 @@ def update_account_save(request, user_id, account_id):
         account.save()
         request.session['success_message'] = 'Cambios guardados satisfactoriamente'
         request.session['message_shown'] = False
-        return redirect('accounts:update_account', user_id, account_id)
+        return redirect('accounts:update_account', account_id)
     elif not account_name_unique: 
         request.session['error_message'] = f'El nombre {new_account_name} no esta disponible'
         request.session['message_shown'] = False
-        return redirect('accounts:update_account', user_id, account_id)
+        return redirect('accounts:update_account', account_id)
 
 @login_required
-def delete_account(request,user_id,account_id):
+def delete_account(request,account_id):
     request = reset_messages(request)
     return render(request, 'accounts/delete_account.html',{'account_id':account_id})    
 
 @login_required
-def delete_account_save(request,user_id,account_id):
+def delete_account_save(request,account_id):
+    request = reset_messages(request)
     account = Account.objects.get(pk=account_id)
     account.delete()
     request.session['success_message'] = 'Cuenta eliminada satisfactoriamente'
     request.session['message_shown'] = False        
-    return redirect('accounts:index',user_id)
+    return redirect('accounts:index')
 
+############### Operations
 @login_required
-def new_operation(request, user_id):
+def new_operation(request):
     request = reset_messages(request)
     accounts_list = Account.objects.filter(user=request.user)
     category_list = Category.objects.filter(user=request.user)
@@ -156,7 +165,7 @@ def new_operation(request, user_id):
     })
 
 @login_required
-def new_operation_save(request, user_id):
+def new_operation_save(request):
     """
     function to create a new operation
     first check that the account specified exists
@@ -168,13 +177,15 @@ def new_operation_save(request, user_id):
     try:
         account = Account.objects.get(name=request.POST['account_name'],user=request.user)
         category = Category.objects.get(name=request.POST['category'],user=request.user)
-    except (KeyError):
+    except (KeyError, Account.DoesNotExist, Category.DoesNotExist):
+        request = reset_messages(request)
         request.session['error_message'] = 'Por favor seleccione de la lista'
         request.session['message_shown'] = False
-        return redirect('accounts:new_operation', user_id)
+        return redirect('accounts:new_operation')
     else:
         amount = float(request.POST['amount'])
         type = request.POST['type']
+        request = reset_messages(request)
         if type == 'Income':
             account.balance+= amount
             account.save()
@@ -182,7 +193,7 @@ def new_operation_save(request, user_id):
             Operation_ac.objects.create(description=description, type=type, category=category, amount=amount, account=account)
             request.session['success_message']='Ingreso agreado correctamente'
             request.session['message_shown']= False
-            return redirect('accounts:index', user_id)
+            return redirect('accounts:index')
         elif type == 'Expense':
             account.balance-= amount
             account.save()
@@ -190,10 +201,10 @@ def new_operation_save(request, user_id):
             request.session['success_message']='Gasto agreado correctamente'
             request.session['message_shown']= False
             Operation_ac.objects.create(description=description, type=type, category=category, amount=amount, account=account)
-            return redirect('accounts:index', user_id)
+            return redirect('accounts:index')
 
 @login_required
-def new_operation_transfer(request, user_id):
+def new_operation_transfer(request):
     request = reset_messages(request)
     accounts_list = Account.objects.filter(user=request.user)
     return render(request, 'accounts/new_transfer.html', {
@@ -201,7 +212,7 @@ def new_operation_transfer(request, user_id):
     })
 
 @login_required
-def new_transfer_save(request, user_id):
+def new_transfer_save(request):
     """
         if the two accounts are diferents then
 
@@ -214,10 +225,12 @@ def new_transfer_save(request, user_id):
     try:
         second_account = Account.objects.get(name=request.POST['second_account_name'],user=request.user)
     except (KeyError, Account.DoesNotExist):
+        request = reset_messages(request)
         request.session['error_message'] = 'Por favor seleccione una cuenta de la lista'
         request.session['message_shown'] = False
-        return redirect('accounts:index', user_id)
+        return redirect('accounts:index')
     else:
+        request = reset_messages(request)
         if second_account != account:
             account.balance -= amount
             account.save()
@@ -231,20 +244,21 @@ def new_transfer_save(request, user_id):
             operation_1.save()
             request.session['success_message']='Transferencia creada correctamente'
             request.session['message_shown']= False
-            return redirect('accounts:index', user_id)
+            return redirect('accounts:index')
         else: 
             request.session['error_message'] = 'Las cuentas no pueden ser iguales'
             request.session['message_shown'] = False
-            return redirect('accounts:new_operation_transfer', user_id)
+            return redirect('accounts:new_operation_transfer')
 
 @login_required
-def operation_detail(request, user_id, operation_id):
+def operation_detail(request, operation_id):
     try:
         operation = Operation_ac.objects.get(pk=operation_id)
     except (KeyError, Operation_ac.DoesNotExist):
+        request = reset_messages(request)
         request.session['error_message'] = 'No se encontro la operacion selccionada'
         request.session['message_shown'] = False
-        return redirect('accounts:index', user_id)
+        return redirect('accounts:index')
     else:
         request = reset_messages(request)
         return render(request, 'accounts/operation_detail.html',{
@@ -252,113 +266,111 @@ def operation_detail(request, user_id, operation_id):
         })
 
 @login_required
-def update_operation(request, user_id, operation_id):
+def update_operation(request, operation_id):
     try:
         operation = Operation_ac.objects.get(pk=operation_id)
     except (KeyError, Operation_ac.DoesNotExist):
+        request = reset_messages(request)
         request.session['error_message'] = 'No se encontro la operacion selccionada'
         request.session['message_shown'] = False
-        return redirect('accounts:index', user_id)
+        return redirect('accounts:index')
     else:
-        request = reset_messages(request)
         if 'Transfer' in operation.type:
+            request = reset_messages(request)
             second_operation = Operation_ac.objects.get(pk=operation.transfer_id)
             return render(request, 'accounts/update_operation.html',{
                 'operation': operation,
                 'second_operation': second_operation,
             })
-        else: 
+        else:
             category_list = Category.objects.filter(user=request.user)
+            request = reset_messages(request)
             return render(request, 'accounts/update_operation.html',{
                 'operation': operation,
                 'category_list': category_list,
             })
 
 @login_required
-def update_transfer(request, user_id, operation_id):
+def update_operation_save(request, operation_id):
     try:
-        operation = Operation_ac.objects.get(pk=operation_id)
-    except (KeyError, Operation_ac.DoesNotExist):
-        request.session['error_message'] = 'No se encontro la operacion selccionada'
+        category_name = request.POST['category']
+        if category_name != 'transfer':
+            category = Category.objects.get(name=category_name, user=request.user)
+    except (KeyError, Category.DoesNotExist):
+        request = reset_messages(request)
+        request.session['error_message'] = 'Por favor seleccione de la lista'
         request.session['message_shown'] = False
-        return redirect('accounts:index', user_id)
+        return redirect('accounts:update_operation', operation_id)
     else:
         request = reset_messages(request)
-        return render(request, 'accounts/update_transfer.html',{
-            'operation': operation,
-        })
-    
-@login_required
-def update_operation_save(request, user_id, operation_id):
-    operation = Operation_ac.objects.get(pk=operation_id)
-    account = Account.objects.get(pk=operation.account.pk)
-    amount = float(request.POST['amount'])
-    if operation.type == 'Income':
-        category = Category.objects.get(name=request.POST['category'], user=request.user)
-        account.balance -= operation.amount
-        account.balance += amount
-        account.save()
-        operation.amount = amount
-        operation.description = request.POST['description']
-        operation.category = category
-        operation.save()
-        request.session['success_message']='Cambios guardados de manera exitosa'
-        request.session['message_shown']= False
-        return redirect('accounts:update_operation', user_id, operation_id)
-    elif operation.type == 'Expense':
-        category = Category.objects.get(name=request.POST['category'], user=request.user)
-        account.balance += operation.amount
-        account.balance -= amount
-        account.save()
-        operation.amount = amount
-        operation.description = request.POST['description']
-        operation.category = category
-        operation.save()
-        request.session['success_message']='Cambios guardados de manera exitosa'
-        request.session['message_shown']= False
-        return redirect('accounts:update_operation', user_id, operation_id)
-    else:
-        second_operation = Operation_ac.objects.get(pk=operation.transfer_id)
-        second_account = Account.objects.get(pk=second_operation.account.pk)
-        if operation.type == 'Transfer-Expense':
-            #First account
-            account.balance += operation.amount
-            account.balance -= amount
-            account.save()
-            operation.amount = amount
-            operation.save()
-            #second account
-            second_account.balance -= second_operation.amount
-            second_account.balance += amount
-            second_account.save()
-            second_operation.amount = amount
-            second_operation.save()
-        else:
-            #First account
+        operation = Operation_ac.objects.get(pk=operation_id)
+        account = Account.objects.get(pk=operation.account.pk)
+        amount = float(request.POST['amount'])
+        if operation.type == 'Income':
             account.balance -= operation.amount
             account.balance += amount
             account.save()
             operation.amount = amount
+            operation.description = request.POST['description']
+            operation.category = category
             operation.save()
-            #second account
-            second_account.balance += second_operation.amount
-            second_account.balance -= amount
-            second_account.save()
-            second_operation.amount = amount
-            second_operation.save()
-            return redirect('accounts:index', user_id)
-        request.session['success_message']='Cambios guardados de manera exitosa'
-        request.session['message_shown']= False
-        return redirect('accounts:update_operation', user_id, operation_id)
+            request.session['success_message']='Cambios guardados de manera exitosa'
+            request.session['message_shown']= False
+            return redirect('accounts:update_operation', operation_id)
+        elif operation.type == 'Expense':
+            account.balance += operation.amount
+            account.balance -= amount
+            account.save()
+            operation.amount = amount
+            operation.description = request.POST['description']
+            operation.category = category
+            operation.save()
+            request.session['success_message']='Cambios guardados de manera exitosa'
+            request.session['message_shown']= False
+            return redirect('accounts:update_operation', operation_id)
+        else:
+            second_operation = Operation_ac.objects.get(pk=operation.transfer_id)
+            second_account = Account.objects.get(pk=second_operation.account.pk)
+            if operation.type == 'Transfer-Expense':
+                #First account
+                account.balance += operation.amount
+                account.balance -= amount
+                account.save()
+                operation.amount = amount
+                operation.save()
+                #second account
+                second_account.balance -= second_operation.amount
+                second_account.balance += amount
+                second_account.save()
+                second_operation.amount = amount
+                second_operation.save()
+            else:
+                #First account
+                account.balance -= operation.amount
+                account.balance += amount
+                account.save()
+                operation.amount = amount
+                operation.save()
+                #second account
+                second_account.balance += second_operation.amount
+                second_account.balance -= amount
+                second_account.save()
+                second_operation.amount = amount
+                second_operation.save()
+                return redirect('accounts:index')
+            request.session['success_message']='Cambios guardados de manera exitosa'
+            request.session['message_shown']= False
+            return redirect('accounts:update_operation', operation_id)
 
 @login_required
-def confirm_operation_delete(request, user_id, operation_id):
+def confirm_operation_delete(request, operation_id):
     try:
         operation = Operation_ac.objects.get(pk=operation_id)
     except (KeyError, Operation_ac.DoesNotExist):
+        request = reset_messages(request)
         request.session['error_message'] = 'No se encontro la operacion selccionada'
         request.session['message_shown'] = False
-        return redirect('accounts:index', user_id)
+        return redirect('accounts:index')
     else:
         request = reset_messages(request)
         return render(request, 'accounts/confirm_delete.html',{
@@ -366,14 +378,16 @@ def confirm_operation_delete(request, user_id, operation_id):
         })
 
 @login_required
-def delete_operation(request, user_id, operation_id):
+def delete_operation(request, operation_id):
     try:
         operation = Operation_ac.objects.get(pk=operation_id)
     except (KeyError, Operation_ac.DoesNotExist):
+        request = reset_messages(request)
         request.session['error_message'] = 'No se encontro la operacion selccionada'
         request.session['message_shown'] = False
-        return redirect('accounts:index', user_id)
+        return redirect('accounts:index')
     else:
+        request = reset_messages(request)
         if operation.type == 'Income':
             account = Account.objects.get(pk=operation.account.pk)
             account.balance -= operation.amount
@@ -413,5 +427,129 @@ def delete_operation(request, user_id, operation_id):
             second_operation.delete()
             request.session['success_message']='Operacion eliminada exitosamente'
             request.session['message_shown']= False  
-        return redirect('accounts:index', user_id)
+        return redirect('accounts:index')
 
+############## Categories
+@login_required
+def user_categories(request):
+    categories_list = Category.objects.filter(user=request.user)
+    request = reset_messages(request)
+    return render(request, 'accounts/user_categories.html',{
+        'categories_list': categories_list,
+    })
+    
+@login_required
+def category_detail(request, category_id):
+    try:
+        category= Category.objects.get(pk=category_id)
+    except (KeyError, Category.DoesNotExist):
+        request = reset_messages(request)
+        request.session['error_message'] = 'No se encontro la operacion selccionada'
+        request.session['message_shown'] = False
+        return redirect('accounts:index')
+    else:
+        request = reset_messages(request)
+        operations_list = Operation_ac.objects.filter(category=category)
+        total_incomes = 0
+        total_expenses = 0
+        for operation in operations_list:
+            if operation.type == 'Income':
+                total_incomes += float(operation.amount)
+            elif operation.type == 'Expense':
+                total_expenses += float(operation.amount)
+
+        return render(request, 'accounts/category_detail.html',{
+            'category': category,
+            'total_incomes': total_incomes,
+            'total_expenses': total_expenses,
+        })
+
+@login_required
+def new_category(request):
+    request = reset_messages(request)
+    return render(request, 'accounts/new_category.html',{})
+
+@login_required
+def new_category_save(request):
+    categories_list = Category.objects.filter(user=request.user)
+    name = request.POST['name']
+    name_unique = check_name(name,categories_list)
+    if name_unique:
+        Category.objects.create(name=name, user=request.user)
+        request.session['success_message'] = 'Categoria creada satisfactoriamente'
+        request.session['message_shown'] = False
+        return redirect('accounts:index')
+    else:
+        request = reset_messages(request)
+        request.session['error_message'] = 'Ya existe una categoria con ese nombre'
+        request.session['message_shown'] = False
+        return redirect('accounts:new_category')
+
+@login_required
+def update_category(request, category_id):
+    request = reset_messages(request)
+    try:
+        category = Category.objects.get(pk=category_id)
+    except (KeyError, Category.DoesNotExist):
+        request.session['error_message'] = 'No se encontro la categoria'
+        request.session['message_shown'] = False
+        return redirect('accounts:index')
+    else: 
+        return render(request, 'accounts/update_category.html',{
+            'category':category,
+        })
+
+@login_required
+def update_category_save(request,category_id):
+    try:
+        category = Category.objects.get(pk=category_id)
+    except (KeyError, Category.DoesNotExist):
+        request.session['error_message'] = 'No se encontro la categoria'
+        request.session['message_shown'] = False
+        return redirect('accounts:index')
+    else:         
+        if category.name != 'Otros':
+            categories_list = Category.objects.filter(user=request.user)
+            new_name = request.POST['name']
+            name_unique = check_name(new_name,categories_list)
+            if name_unique:
+                category.name = new_name
+                category.save()
+                request.session['success_message'] = 'Cambios guardados satisfactoriamente'
+                request.session['message_shown'] = False
+                return redirect('accounts:index')
+            else:
+                request = reset_messages(request)
+                request.session['error_message'] = 'Ya existe una categoria con ese nombre'
+                request.session['message_shown'] = False
+                return redirect('accounts:update_category',category_id)
+        else:
+            request = reset_messages(request)
+            request.session['error_message'] = 'No se puede modificar la categoria Otros'
+            request.session['message_shown'] = False
+            return redirect('accounts:user_categories')
+
+@login_required
+def confirm_category_delete(request):
+    request = reset_messages(request)
+    return render(request, 'accounts/confirm_category_delete.html',{})
+
+@login_required
+def delete_category(request, category_id):
+    ### Cambiar el model on_delete to SET NULL
+    category = Category.objects.get(pk=category_id)
+    
+    if category.name != 'Otros':
+        second_category = Category.objects.get(name='Otros', user=request.user)
+        operations_list = Operation_ac.objects.filter(category=category)
+        for operation in operations_list:
+            operation.category = second_category
+        category.delete()
+        request.session['success_message'] = 'Categoria eliminada satisfactoriamente'
+        request.session['message_shown'] = False
+        return redirect('accounts:user_categories')
+    else: 
+        request = reset_messages(request)
+        request.session['error_message'] = 'No se puede eliminar la categoria Otros'
+        request.session['message_shown'] = False
+        return redirect('accounts:user_categories')

@@ -14,7 +14,7 @@
     {% endfor %}
 
     {% if request.user.is_authenticated %}
-        <a href="{% url 'main:main_view' user.id %}">User</a><br>
+        <a href="{% url 'main:main_view' %}">User</a><br>
         <a href="{% url 'main:logout' %}">log out</a>        
     {% else %}    
         <a href="{% url 'main:mylogin'%}">log in</a><br>

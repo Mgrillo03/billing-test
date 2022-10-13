@@ -8,7 +8,7 @@
 </head>
 <body>
     <h1>Transferencia</h1>
-    <form action="{% url 'accounts:transfer_created' request.user.id %}" method="post">
+    <form action="{% url 'accounts:transfer_created'  %}" method="post">
         {% csrf_token %}
         <label for="account_name" >Cuenta:</label>
         <input   list="account-list" name="account_name" placeholder="Selccione Opcion.." required>
@@ -38,6 +38,6 @@
     </form>
     {{ request.session.error_message }} <br>
 
-    <a href="{% url 'accounts:index' request.user.id%}">Cancelar</a>
+    <a href="{% url 'accounts:index' %}">Cancelar</a>
 </body>
 </html>

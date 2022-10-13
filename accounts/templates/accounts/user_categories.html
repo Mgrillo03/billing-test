@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Categorias</h1>
+    {% for category in categories_list %}
+    Nombre: {{category.name}}
+    <a href="{% url 'accounts:category_detail'  category.id %}">view</a> 
+        {% if category.name != 'Otros' %}
+        <a href="{% url 'accounts:update_category'  category.id %}">update</a> 
+        <a href="{% url 'accounts:confirm_category_delete'  category.id %}">delete</a> 
+        {% else%}     
+        <a href="#">update</a> 
+        <a href="#">delete</a> 
+        <br>
+        {% endif %}
+    {% endfor %}
+    <br><br>
+</body>
+</html>

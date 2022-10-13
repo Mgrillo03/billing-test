@@ -10,7 +10,7 @@
     <h1>Delete {{request.user.username}}</h1>
 
 
-    <form action="{% url 'main:user_deleted' user.id%}" method="post">
+    <form action="{% url 'main:user_deleted' %}" method="post">
         {% csrf_token %}
         <label for="username">username</label><br>
         <input type="text" name="username" value="{{user.username}}" readonly><br>
@@ -35,6 +35,6 @@
     
     {{ request.session.error_message }} <br>
     
-    <a href="{% url 'main:main_view' user.id %}">Cancelar</a><br>
+    <a href="{% url 'main:main_view'  %}">Cancelar</a><br>
 </body>
 </html>
