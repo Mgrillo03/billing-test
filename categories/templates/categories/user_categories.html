@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Categorias</h1>
+    <h3>Gastos:</h3>
+    {% for category in categories_expense_list %}
+    Nombre: {{category.name}}
+    <a href="{% url 'categories:category_detail'  category.id %}">view</a> 
+        {% if category.name != 'Otros' %}
+        <a href="{% url 'categories:update_category'  category.id %}">update</a> 
+        <a href="{% url 'categories:confirm_category_delete'  category.id %}">delete</a> <br>
+        {% else%}     
+        <a href="#">update</a> 
+        <a href="#">delete</a> 
+        <br>
+        {% endif %}
+    {% endfor %}<br><br>
+    <br><br>
+    <h3>Ingresos:</h3>
+    {% for category in categories_income_list %}
+    Nombre: {{category.name}}
+    <a href="{% url 'categories:category_detail'  category.id %}">view</a> 
+        {% if category.name != 'Otros' %}
+        <a href="{% url 'categories:update_category'  category.id %}">update</a> 
+        <a href="{% url 'categories:confirm_category_delete'  category.id %}">delete</a> <br>
+        {% else%}     
+        <a href="#">update</a> 
+        <a href="#">delete</a> 
+        <br>
+        {% endif %}
+    {% endfor %}<br><br>
+
+    <br>
+    {{ request.session.success_message }} <br>
+    {{ request.session.error_message }} <br>
+
+    <a href="{% url 'categories:new_category' %}">Nueva Categoria</a>
+
+    <br><br>
+    <a href="{% url 'accounts:index' %}">Volver</a>
+</body>
+</html>

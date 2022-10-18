@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
+from accounts.models import Account
+from categories.models import Category
 
 def reset_messages(request):
     try : 
@@ -66,6 +68,18 @@ def singup_next(request):
         user = User.objects.create(username=username, email=email, password=password, first_name=first_name,last_name=last_name)
         user.set_password(password)
         user.save()   
+        #User first account
+        Account.objects.create(name='Efectivo', description= 'Dinero en efectivo', balance = 0, bank='Efectivo', user=user)
+
+        #User dedfault Categories
+        category_expense_names = ['Comida','Entretenimiento','Hogar','Facturas','Salud','Transporte','Educacion','Otros']
+        for name in category_expense_names:
+            Category.objects.create(name=name, user=user,type='Expense')
+        category_income_names = ['Salario','Inversiones','Premios','Regalos','Otros']
+        for name in category_income_names:
+            Category.objects.create(name=name, user=user,type='Income')
+
+
         return render(request, 'main/singup_next.html',{})
     elif not username_unique: 
         request.session['error_message'] = f'El username {username} no esta disponible'
@@ -182,13 +196,13 @@ def update_user_save(request):
         return redirect('main:update_user')
 
 @login_required
-def delete_user(request,user_id):
+def delete_user(request):
     request = reset_messages(request)
     return render(request, 'main/delete_user.html',{})
 
 @login_required
-def delete_user_save(request,user_id):
-    user = User.objects.get(pk=user_id)
+def delete_user_save(request):
+    user = User.objects.get(pk=request.user)
     password = request.POST['password']
     if user.check_password(password):
         logout(request)
@@ -199,7 +213,7 @@ def delete_user_save(request,user_id):
     else:
         request.session['error_message'] = 'La contraseña es incorrecta'
         request.session['message_shown'] = False        
-        return redirect('main:delete_user',user_id)
+        return redirect('main:delete_user')
 
     
 

@@ -12,6 +12,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY =  config('SECRET_KEY')
 
+HASHID_FIELD_SALT = config('HASHID_FIELD_SALT')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -23,6 +25,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'main.apps.MainConfig',
     'accounts.apps.AccountsConfig',
+    'categories.apps.CategoriesConfig',
     
     'django.contrib.admin',
     'django.contrib.auth',
@@ -96,6 +99,7 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/

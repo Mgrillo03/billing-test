@@ -1,11 +1,10 @@
-from ast import If
-from logging import captureWarnings
-from unicodedata import category
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
-from .models import Account, Operation_ac, Category
+from .models import Account, Operation_ac
+from categories.models import Category
+
 #Eliminar todas las referencias de user_id
 
 def reset_messages(request):
@@ -95,7 +94,7 @@ def account_detail(request, account_id):
 
 @login_required
 def update_account(request, account_id):
-    account = Account.objects.get(id=account_id)
+    account = Account.objects.get(pk=account_id)
     request = reset_messages(request)
     return render(request,'accounts/update_account.html',{'account':account})
 
@@ -107,7 +106,7 @@ def update_account_save(request, account_id):
     account_name_unique = check_name(new_account_name, list_accounts)
    
     if account_name_unique :
-        account = Account.objects.get(id=account_id)
+        account = Account.objects.get(pk=account_id)
         account.name = new_account_name
         account.description = request.POST['description']
         account.bank = request.POST['bank']
@@ -156,13 +155,25 @@ def delete_account_save(request,account_id):
 
 ############### Operations
 @login_required
-def new_operation(request):
+def new_operation_income(request):
     request = reset_messages(request)
     accounts_list = Account.objects.filter(user=request.user)
-    category_list = Category.objects.filter(user=request.user)
+    category_list = Category.objects.filter(user=request.user,type='Income')
     return render(request, 'accounts/new_operation.html', {
         'accounts_list': accounts_list,
         'category_list': category_list,
+        'type': 'Income',
+    })
+
+@login_required
+def new_operation_expense(request):
+    request = reset_messages(request)
+    accounts_list = Account.objects.filter(user=request.user)
+    category_list = Category.objects.filter(user=request.user,type='Expense')
+    return render(request, 'accounts/new_operation.html', {
+        'accounts_list': accounts_list,
+        'category_list': category_list,
+        'type': 'Expense',
     })
 
 @login_required
@@ -177,7 +188,7 @@ def new_operation_save(request):
     """
     try:
         account = Account.objects.get(name=request.POST['account_name'],user=request.user)
-        category = Category.objects.get(name=request.POST['category'],user=request.user)
+        category = Category.objects.get(name=request.POST['category'],user=request.user,type=request.POST['type'])
     except (KeyError, Account.DoesNotExist, Category.DoesNotExist):
         request = reset_messages(request)
         request.session['error_message'] = 'Por favor seleccione de la lista'
@@ -437,130 +448,3 @@ def delete_operation(request, operation_id):
             request.session['message_shown']= False  
         return redirect('accounts:index')
 
-############## Categories
-@login_required
-def user_categories(request):
-    categories_list = Category.objects.filter(user=request.user)
-    request = reset_messages(request)
-    return render(request, 'accounts/user_categories.html',{
-        'categories_list': categories_list,
-    })
-    
-@login_required
-def category_detail(request, category_id):
-    try:
-        category= Category.objects.get(pk=category_id)
-    except (KeyError, Category.DoesNotExist):
-        request = reset_messages(request)
-        request.session['error_message'] = 'No se encontro la operacion selccionada'
-        request.session['message_shown'] = False
-        return redirect('accounts:index')
-    else:
-        request = reset_messages(request)
-        operations_list = Operation_ac.objects.filter(category=category)
-        total_incomes = 0
-        total_expenses = 0
-        for operation in operations_list:
-            if operation.type == 'Income':
-                total_incomes += float(operation.amount)
-            elif operation.type == 'Expense':
-                total_expenses += float(operation.amount)
-
-        return render(request, 'accounts/category_detail.html',{
-            'category': category,
-            'total_incomes': total_incomes,
-            'total_expenses': total_expenses,
-        })
-
-@login_required
-def new_category(request):
-    request = reset_messages(request)
-    return render(request, 'accounts/new_category.html',{})
-
-@login_required
-def new_category_save(request):
-    categories_list = Category.objects.filter(user=request.user)
-    name = request.POST['name']
-    name_unique = check_name(name,categories_list)
-    if name_unique:
-        Category.objects.create(name=name, user=request.user)
-        request.session['success_message'] = 'Categoria creada satisfactoriamente'
-        request.session['message_shown'] = False
-        return redirect('accounts:index')
-    else:
-        request = reset_messages(request)
-        request.session['error_message'] = 'Ya existe una categoria con ese nombre'
-        request.session['message_shown'] = False
-        return redirect('accounts:new_category')
-
-@login_required
-def update_category(request, category_id):
-    request = reset_messages(request)
-    try:
-        category = Category.objects.get(pk=category_id)
-    except (KeyError, Category.DoesNotExist):
-        request.session['error_message'] = 'No se encontro la categoria'
-        request.session['message_shown'] = False
-        return redirect('accounts:index')
-    else: 
-        return render(request, 'accounts/update_category.html',{
-            'category':category,
-        })
-
-@login_required
-def update_category_save(request,category_id):
-    try:
-        category = Category.objects.get(pk=category_id)
-    except (KeyError, Category.DoesNotExist):
-        request.session['error_message'] = 'No se encontro la categoria'
-        request.session['message_shown'] = False
-        return redirect('accounts:index')
-    else:         
-        if category.name != 'Otros':
-            categories_list = Category.objects.filter(user=request.user)
-            new_name = request.POST['name']
-            name_unique = check_name(new_name,categories_list)
-            if name_unique:
-                category.name = new_name
-                category.save()
-                request.session['success_message'] = 'Cambios guardados satisfactoriamente'
-                request.session['message_shown'] = False
-                return redirect('accounts:index')
-            else:
-                request = reset_messages(request)
-                request.session['error_message'] = 'Ya existe una categoria con ese nombre'
-                request.session['message_shown'] = False
-                return redirect('accounts:update_category',category_id)
-        else:
-            request = reset_messages(request)
-            request.session['error_message'] = 'No se puede modificar la categoria Otros'
-            request.session['message_shown'] = False
-            return redirect('accounts:user_categories')
-
-@login_required
-def confirm_category_delete(request, category_id):
-    category = Category.objects.get(pk=category_id)
-    request = reset_messages(request)
-    return render(request, 'accounts/confirm_category_delete.html',{
-        'category': category,
-    })
-
-@login_required
-def delete_category(request, category_id):
-    ### Cambiar el model on_delete to SET NULL
-    category = Category.objects.get(pk=category_id)
-    
-    if category.name != 'Otros':
-        second_category = Category.objects.get(name='Otros', user=request.user)
-        operations_list = Operation_ac.objects.filter(category=category)
-        for operation in operations_list:
-            operation.category = second_category
-        category.delete()
-        request.session['success_message'] = 'Categoria eliminada satisfactoriamente'
-        request.session['message_shown'] = False
-        return redirect('accounts:user_categories')
-    else: 
-        request = reset_messages(request)
-        request.session['error_message'] = 'No se puede eliminar la categoria Otros'
-        request.session['message_shown'] = False
-        return redirect('accounts:user_categories')

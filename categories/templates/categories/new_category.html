@@ -8,10 +8,25 @@
 </head>
 <body>
     <h1>New Category</h1>
-    <form action="{% url 'accounts:new_category_save' %}" method="post">
+    <form action="{% url 'categories:new_category_save' %}" method="post">
         {% csrf_token %}
         <label for="name">Category name</label><br>
         <input type="text" name="name" placeholder="name" required><br>
+
+        <div>
+            <legend>Tipo:</legend>
+        
+            <div>
+              <input type="radio" id="expense" name="type" value="Expense"
+                     checked>
+              <label for="expense">Expense</label>
+            </div>
+        
+            <div>
+              <input type="radio" id="income" name="type" value="Income">
+              <label for="income">Income</label>
+            </div>
+        </div>
         
         <input type="submit" value="Create">
     </form>

@@ -8,7 +8,7 @@
 </head>
 <body>
     <h1>Update Category</h1>
-    <form action="{% url 'accounts:update_category_save' category.id %}" method="post">
+    <form action="{% url 'categories:update_category_save' category.id %}" method="post">
         {% csrf_token %}
         <label for="name">Category name</label><br>
         <input type="text" name="name" value="{{category.name}}" required><br>
@@ -18,6 +18,6 @@
     {{ request.session.success_message }} <br>
     {{ request.session.error_message }} <br>
 
-    <a href="{% url 'accounts:user_categories'  %}">Volver</a>
+    <a href="{% url 'categories:user_categories'  %}">Volver</a>
 </body>
 </html>
