@@ -5,7 +5,8 @@ from django.contrib.auth.decorators import login_required
 from .models import Account, Operation_ac
 from categories.models import Category
 
-#Eliminar todas las referencias de user_id
+import datetime
+
 
 def reset_messages(request):
     try : 
@@ -40,7 +41,7 @@ def get_general_balance(accounts_list):
 @login_required
 def index(request):
     accounts_list = Account.objects.filter(user=request.user)
-    operations_list = Operation_ac.objects.filter(account__in=accounts_list).order_by('-created_at')
+    operations_list = Operation_ac.objects.filter(account__in=accounts_list).order_by('-date')
     general_balance = get_general_balance(accounts_list)
     request = reset_messages(request)
     return render(request, 'accounts/index.html',{
@@ -196,30 +197,33 @@ def new_operation_save(request):
         return redirect('accounts:new_operation')
     else:
         amount = float(request.POST['amount'])
-        date = request.POST['date']
-        if date:
+        date_iso = request.POST['date']
+        if date_iso:
+            date_format = datetime.datetime.fromisoformat(date_iso)
+            date_now = datetime.datetime.now(datetime.timezone.utc)
+            date = datetime.datetime.combine(date_format.date(),date_now.time(),date_now.tzinfo)
             print(date)
         else:
-            print('nop')
-
+            date = datetime.datetime.now(datetime.timezone.utc)
+            print(date)
 
         type = request.POST['type']
         request = reset_messages(request)
         if type == 'Income':
             account.balance+= amount
-            #ccount.save()
+            account.save()
             description = request.POST['description']
-            #Operation_ac.objects.create(description=description, type=type, category=category, amount=amount, account=account)
+            Operation_ac.objects.create(description=description, type=type, category=category, amount=amount, account=account, date=date)
             request.session['success_message']='Ingreso agreado correctamente'
             request.session['message_shown']= False
             return redirect('accounts:index')
         elif type == 'Expense':
             account.balance-= amount
-            #account.save()
+            account.save()
             description = request.POST['description']
             request.session['success_message']='Gasto agreado correctamente'
             request.session['message_shown']= False
-            #Operation_ac.objects.create(description=description, type=type, category=category, amount=amount, account=account)
+            Operation_ac.objects.create(description=description, type=type, category=category, amount=amount, account=account, date=date)
             return redirect('accounts:index')
 
 @login_required

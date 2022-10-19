@@ -19,7 +19,7 @@
     <br><br>
 
     {% for operation in operations_list %}
-    {{operation.created_at}} - {{operation.account.name}}: {{operation.type}}: - monto: ${{operation.amount}} - descripcion: {{operation.description}} - categoria: {{operation.category.name}} 
+    {{operation.date}} - {{operation.account.name}}: {{operation.type}}: - monto: ${{operation.amount}} - descripcion: {{operation.description}} - categoria: {{operation.category.name}} 
     <a href="{% url 'accounts:operation_detail'  operation.id %}">view</a> 
     <a href="{% url 'accounts:update_operation'  operation.id %}">update</a> 
     <a href="{% url 'accounts:confirm_operation_delete'  operation.id %}">delete</a> 
