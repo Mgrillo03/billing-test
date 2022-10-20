@@ -29,6 +29,9 @@
         <input type="text" name="description" value="{{operation.description}}" readonly><br>
 
         {% if not second_operation %}
+        <label for="date">fecha</label><br>
+        <input type="date" name="date" value="{{date}}"><br>
+
         <label for="category">categoria</label><br>
         <input list="category-list" name="category" value="{{operation.category.name}}" ><br>
             <datalist id="category-list">
@@ -36,7 +39,7 @@
                     <option value="{{category.name}}">{{category.name}}</option>                
                 {% endfor %}  
             </datalist><br>
-        {% else %}
+        {% else %}        
         <input type="hidden" name="category" value="transfer" ><br>
         {% endif %}
                 

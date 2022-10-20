@@ -160,10 +160,12 @@ def new_operation_income(request):
     request = reset_messages(request)
     accounts_list = Account.objects.filter(user=request.user)
     category_list = Category.objects.filter(user=request.user,type='Income')
+    date = datetime.date.today().isoformat()
     return render(request, 'accounts/new_operation.html', {
         'accounts_list': accounts_list,
         'category_list': category_list,
         'type': 'Income',
+        'date': date,
     })
 
 @login_required
@@ -171,10 +173,13 @@ def new_operation_expense(request):
     request = reset_messages(request)
     accounts_list = Account.objects.filter(user=request.user)
     category_list = Category.objects.filter(user=request.user,type='Expense')
+    date = datetime.date.today().isoformat()   
+
     return render(request, 'accounts/new_operation.html', {
         'accounts_list': accounts_list,
         'category_list': category_list,
         'type': 'Expense',
+        'date': date,
     })
 
 @login_required
@@ -202,10 +207,8 @@ def new_operation_save(request):
             date_format = datetime.datetime.fromisoformat(date_iso)
             date_now = datetime.datetime.now(datetime.timezone.utc)
             date = datetime.datetime.combine(date_format.date(),date_now.time(),date_now.tzinfo)
-            print(date)
         else:
             date = datetime.datetime.now(datetime.timezone.utc)
-            print(date)
 
         type = request.POST['type']
         request = reset_messages(request)
@@ -306,11 +309,14 @@ def update_operation(request, operation_id):
                 'second_operation': second_operation,
             })
         else:
+            date = operation.date.isoformat()[:10]
+            print(date)
             category_list = Category.objects.filter(user=request.user)
             request = reset_messages(request)
             return render(request, 'accounts/update_operation.html',{
                 'operation': operation,
                 'category_list': category_list,
+                'date': date,
             })
 
 @login_required
@@ -330,23 +336,37 @@ def update_operation_save(request, operation_id):
         account = Account.objects.get(pk=operation.account.pk)
         amount = float(request.POST['amount'])
         if operation.type == 'Income':
+            date_iso = request.POST['date']
+            date_format = datetime.datetime.fromisoformat(date_iso)
+            date_prev = operation.date
+            date = datetime.datetime.combine(date_format.date(),date_prev.time(),date_prev.tzinfo)
+
             account.balance -= operation.amount
             account.balance += amount
             account.save()
+
             operation.amount = amount
             operation.description = request.POST['description']
             operation.category = category
+            operation.date = date
             operation.save()
             request.session['success_message']='Cambios guardados de manera exitosa'
             request.session['message_shown']= False
             return redirect('accounts:update_operation', operation_id)
         elif operation.type == 'Expense':
+            date_iso = request.POST['date']
+            date_format = datetime.datetime.fromisoformat(date_iso)
+            date_prev = operation.date
+            date = datetime.datetime.combine(date_format.date(),date_prev.time(),date_prev.tzinfo)
+
             account.balance += operation.amount
             account.balance -= amount
             account.save()
+
             operation.amount = amount
             operation.description = request.POST['description']
             operation.category = category
+            operation.date = date
             operation.save()
             request.session['success_message']='Cambios guardados de manera exitosa'
             request.session['message_shown']= False

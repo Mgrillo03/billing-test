@@ -2,6 +2,7 @@ from email.policy import default
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+import django
 
 from hashid_field import HashidAutoField
 
@@ -22,7 +23,7 @@ class Operation_ac(models.Model):
     type = models.CharField(max_length=70)
     category = models.ForeignKey(Category,on_delete=models.SET_NULL, null=True)
     amount = models.FloatField(default=0)
-    date = models.DateTimeField(default=timezone.now())
+    date = models.DateTimeField(default= django.utils.timezone.now)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     transfer_id = models.IntegerField(default=0)
     
